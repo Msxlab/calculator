@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("user")
+  projects      Project[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Project {
+  id           String         @id @default(cuid())
+  customer     Customer       @relation(fields: [customerId], references: [id])
+  customerId   String
+  projectType  String
+  materialType String
+  materialName String
+  edgeType     String
+  measurements Measurement[]
+  extras       Extra[]
+  totalPrice   Float
+  status       String        @default("draft")
+  user         User          @relation(fields: [userId], references: [id])
+  userId       String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  name      String
+  address   String
+  phone     String
+  email     String?
+  projects  Project[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Measurement {
+  id        String   @id @default(cuid())
+  type      String
+  length    Float
+  width     Float
+  sqft      Float
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Extra {
+  id          String   @id @default(cuid())
+  name        String
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
