@@ -18,14 +18,15 @@ export interface Measurement {
   sqft: number;
 }
 
-export interface Extra {
+export interface ExtraService {
+  id: string;
   name: string;
+  price: number;
   quantity: number;
-  unitPrice: number;
-  totalPrice: number;
 }
 
 export interface Project {
+  id?: string;
   customerInfo: CustomerInfo;
   projectDetails: ProjectDetails;
   measurements: {
@@ -33,7 +34,9 @@ export interface Project {
     backsplashes: Measurement[];
     edges: Measurement[];
   };
-  extras: Extra[];
+  extras: ExtraService[];
   totalPrice: number;
   status: 'draft' | 'quote' | 'contract' | 'completed';
+  createdAt?: Date;
+  updatedAt?: Date;
 }

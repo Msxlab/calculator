@@ -1,13 +1,6 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
 export function calculateSqft(length: number, width: number): number {
   if (!length || !width) return 0;
-  const sqft = (length * width) / 144; // Convert square inches to square feet
+  const sqft = (length * width) / 144; // inch kare'den square feet'e çevirmek için 144'e bölüyoruz (12x12)
   return Number(sqft.toFixed(2));
 }
 
@@ -20,4 +13,8 @@ export function formatCurrency(amount: number): string {
     style: 'currency',
     currency: 'USD',
   }).format(amount);
+}
+
+export function cn(...classes: string[]) {
+  return classes.filter(Boolean).join(' ');
 }

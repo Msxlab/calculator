@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { calculateSqft } from '../../utils/utils';
 
 interface Measurement {
   length: number;
@@ -19,16 +18,25 @@ interface Props {
 }
 
 export default function Measurements({ data, onChange }: Props) {
+  const calculateSqft = (length: number, width: number) => {
+    if (!length || !width) return 0;
+    const sqft = (length * width) / 144; // Convert to square feet (12 x 12 inches)
+    return Number(sqft.toFixed(2));
+  };
+
   const handleInputChange = (
     type: keyof Props['data'],
     index: number,
     field: 'length' | 'width',
     inputValue: string
   ) => {
+    // Remove non-numeric characters
+    const value = inputValue.replace(/[^\d.]/g, '');
+    const numericValue = value ? parseFloat(value) : 0;
+
     const newData = { ...data };
     const measurements = [...newData[type]];
-    const numericValue = inputValue === '' ? 0 : parseFloat(inputValue);
-
+    
     measurements[index] = {
       ...measurements[index],
       [field]: numericValue,
@@ -59,8 +67,7 @@ export default function Measurements({ data, onChange }: Props) {
               <td className="p-1">
                 <input
                   type="text"
-                  pattern="[0-9]*"
-                  inputMode="decimal"
+                  inputMode="numeric"
                   className="w-24 px-2 py-1 border rounded"
                   value={measurement.length || ''}
                   onChange={(e) => handleInputChange(type, index, 'length', e.target.value)}
@@ -70,8 +77,7 @@ export default function Measurements({ data, onChange }: Props) {
               <td className="p-1">
                 <input
                   type="text"
-                  pattern="[0-9]*"
-                  inputMode="decimal"
+                  inputMode="numeric"
                   className="w-24 px-2 py-1 border rounded"
                   value={measurement.width || ''}
                   onChange={(e) => handleInputChange(type, index, 'width', e.target.value)}

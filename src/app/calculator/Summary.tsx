@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
-import { generatePDF } from '../../utils/pdfGenerator';
-import { formatCurrency } from '../../utils/utils';
+import React from 'react';
+import { calculatePrice, calculateSqft, formatCurrency } from '../../utils/utils';
+import { generatePDF } from '@/utils/pdfGenerator';
 
-export default function Summary({ project }: { project: any }) {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+interface Props {
+  project: any; // Daha sonra proper type tanımlaması yapılacak
+}
 
+export default function Summary({ project }: Props) {
   const calculateTotalSqft = () => {
     const topsSqft = project.measurements.tops.reduce((sum: number, m: any) => 
       sum + (m.sqft || 0), 0);
@@ -18,7 +18,8 @@ export default function Summary({ project }: { project: any }) {
   };
 
   const calculateMaterialPrice = () => {
-    return Number((calculateTotalSqft() * 40).toFixed(2)); // $40 per sqft
+    const basePricePerSqft = 40; // Bu fiyatı daha sonra material type'a göre değiştirebiliriz
+    return calculatePrice(calculateTotalSqft(), basePricePerSqft);
   };
 
   const calculateExtrasTotal = () => {
@@ -55,7 +56,7 @@ export default function Summary({ project }: { project: any }) {
         </div>
       </div>
 
-      {/* Measurements Table */}
+      {/* Ölçümler */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <h3 className="text-lg font-bold text-gray-900 mb-4">Measurements</h3>
         <div className="grid gap-6 md:grid-cols-2">
@@ -65,18 +66,18 @@ export default function Summary({ project }: { project: any }) {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-left p-2">Length</th>
-                  <th className="text-left p-2">Width</th>
-                  <th className="text-left p-2">Sqft</th>
+                  <th className="px-2 py-1 text-left text-sm">Length</th>
+                  <th className="px-2 py-1 text-left text-sm">Width</th>
+                  <th className="px-2 py-1 text-left text-sm">Sqft</th>
                 </tr>
               </thead>
               <tbody>
                 {project.measurements.tops.map((item: any, index: number) => (
                   item.length > 0 || item.width > 0 ? (
                     <tr key={index}>
-                      <td className="p-2">{item.length}"</td>
-                      <td className="p-2">{item.width}"</td>
-                      <td className="p-2">{item.sqft.toFixed(2)}</td>
+                      <td className="px-2 py-1">{item.length}"</td>
+                      <td className="px-2 py-1">{item.width}"</td>
+                      <td className="px-2 py-1">{item.sqft?.toFixed(2)}</td>
                     </tr>
                   ) : null
                 ))}
@@ -90,18 +91,18 @@ export default function Summary({ project }: { project: any }) {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-left p-2">Length</th>
-                  <th className="text-left p-2">Width</th>
-                  <th className="text-left p-2">Sqft</th>
+                  <th className="px-2 py-1 text-left text-sm">Length</th>
+                  <th className="px-2 py-1 text-left text-sm">Width</th>
+                  <th className="px-2 py-1 text-left text-sm">Sqft</th>
                 </tr>
               </thead>
               <tbody>
                 {project.measurements.backsplashes.map((item: any, index: number) => (
                   item.length > 0 || item.width > 0 ? (
                     <tr key={index}>
-                      <td className="p-2">{item.length}"</td>
-                      <td className="p-2">{item.width}"</td>
-                      <td className="p-2">{item.sqft.toFixed(2)}</td>
+                      <td className="px-2 py-1">{item.length}"</td>
+                      <td className="px-2 py-1">{item.width}"</td>
+                      <td className="px-2 py-1">{item.sqft?.toFixed(2)}</td>
                     </tr>
                   ) : null
                 ))}
@@ -114,34 +115,40 @@ export default function Summary({ project }: { project: any }) {
         </div>
       </div>
 
-      {/* Extras */}
+      {/* Ekstra Hizmetler */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <h3 className="text-lg font-bold text-gray-900 mb-4">Additional Services</h3>
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
-              <th className="text-left p-2">Service</th>
-              <th className="text-right p-2">Quantity</th>
-              <th className="text-right p-2">Price</th>
-              <th className="text-right p-2">Total</th>
+              <th className="px-4 py-2 text-left">Service</th>
+              <th className="px-4 py-2 text-right">Quantity</th>
+              <th className="px-4 py-2 text-right">Price</th>
+              <th className="px-4 py-2 text-right">Total</th>
             </tr>
           </thead>
           <tbody>
             {project.extras.map((extra: any) => (
               extra.quantity > 0 && (
                 <tr key={extra.id}>
-                  <td className="p-2">{extra.name}</td>
-                  <td className="p-2 text-right">{extra.quantity}</td>
-                  <td className="p-2 text-right">{formatCurrency(extra.price)}</td>
-                  <td className="p-2 text-right">{formatCurrency(extra.price * extra.quantity)}</td>
+                  <td className="px-4 py-2">{extra.name}</td>
+                  <td className="px-4 py-2 text-right">{extra.quantity}</td>
+                  <td className="px-4 py-2 text-right">{formatCurrency(extra.price)}</td>
+                  <td className="px-4 py-2 text-right">{formatCurrency(extra.price * extra.quantity)}</td>
                 </tr>
               )
             ))}
           </tbody>
+          <tfoot className="bg-gray-50">
+            <tr>
+              <td colSpan={3} className="px-4 py-2 font-medium text-right">Additional Services Total:</td>
+              <td className="px-4 py-2 font-medium text-right">{formatCurrency(calculateExtrasTotal())}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
 
-      {/* Total */}
+      {/* Toplam */}
       <div className="bg-white p-6 rounded-lg shadow-sm">
         <div className="space-y-2">
           <div className="flex justify-between">
@@ -161,33 +168,13 @@ export default function Summary({ project }: { project: any }) {
         </div>
       </div>
 
-      {/* Error/Success Messages */}
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-          {success}
-        </div>
-      )}
-
-      {/* Action Buttons */}
+      {/* Aksiyonlar */}
       <div className="flex justify-end space-x-4">
-        <button
+        <button 
           onClick={() => generatePDF(project)}
-          disabled={loading}
-          className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:opacity-50"
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
         >
-          {loading ? 'Generating...' : 'Generate PDF'}
-        </button>
-        <button
-          onClick={() => console.log('Save quote clicked')}
-          disabled={loading}
-          className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
-        >
-          {loading ? 'Saving...' : 'Save Quote'}
+          Generate PDF
         </button>
       </div>
     </div>
