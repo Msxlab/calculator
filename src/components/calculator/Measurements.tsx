@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { calculateSqft } from '../../utils/utils';
 
 interface Measurement {
   length: number;
@@ -19,30 +18,28 @@ interface Props {
 }
 
 export default function Measurements({ data, onChange }: Props) {
-  const handleInputChange = (
+  const handleChange = (
     type: keyof Props['data'],
     index: number,
     field: 'length' | 'width',
-    inputValue: string
+    value: string
   ) => {
     const newData = { ...data };
     const measurements = [...newData[type]];
-    const numericValue = inputValue === '' ? 0 : parseFloat(inputValue);
+    const numValue = value ? Number(value) : 0;
 
     measurements[index] = {
       ...measurements[index],
-      [field]: numericValue,
-      sqft: calculateSqft(
-        field === 'length' ? numericValue : measurements[index].length,
-        field === 'width' ? numericValue : measurements[index].width
-      )
+      [field]: numValue,
+      sqft: ((field === 'length' ? numValue : measurements[index].length) * 
+             (field === 'width' ? numValue : measurements[index].width)) / 144
     };
 
     newData[type] = measurements;
     onChange(newData);
   };
 
-  const MeasurementTable = ({ type, items }: { type: keyof Props['data']; items: Measurement[] }) => (
+  const renderTable = (type: keyof Props['data'], measurements: Measurement[]) => (
     <div className="border rounded-lg p-4">
       <h3 className="text-lg font-bold mb-4">{type.toUpperCase()}</h3>
       <table className="w-full">
@@ -54,28 +51,22 @@ export default function Measurements({ data, onChange }: Props) {
           </tr>
         </thead>
         <tbody>
-          {items.map((measurement, index) => (
+          {measurements.map((measurement, index) => (
             <tr key={index}>
               <td className="p-1">
                 <input
                   type="text"
-                  pattern="[0-9]*"
-                  inputMode="decimal"
                   className="w-24 px-2 py-1 border rounded"
                   value={measurement.length || ''}
-                  onChange={(e) => handleInputChange(type, index, 'length', e.target.value)}
-                  placeholder="0"
+                  onChange={(e) => handleChange(type, index, 'length', e.target.value)}
                 />
               </td>
               <td className="p-1">
                 <input
                   type="text"
-                  pattern="[0-9]*"
-                  inputMode="decimal"
                   className="w-24 px-2 py-1 border rounded"
                   value={measurement.width || ''}
-                  onChange={(e) => handleInputChange(type, index, 'width', e.target.value)}
-                  placeholder="0"
+                  onChange={(e) => handleChange(type, index, 'width', e.target.value)}
                 />
               </td>
               <td className="p-1">
@@ -96,11 +87,11 @@ export default function Measurements({ data, onChange }: Props) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MeasurementTable type="tops" items={data.tops} />
-        <MeasurementTable type="backsplashes" items={data.backsplashes} />
+        {renderTable('tops', data.tops)}
+        {renderTable('backsplashes', data.backsplashes)}
       </div>
       <div>
-        <MeasurementTable type="edges" items={data.edges} />
+        {renderTable('edges', data.edges)}
       </div>
     </div>
   );
