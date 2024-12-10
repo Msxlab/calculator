@@ -1,14 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
+import { calculatePrice, calculateSqft, formatCurrency } from '../../utils/utils';
 import { generatePDF } from '../../utils/pdfGenerator';
-import { formatCurrency } from '../../utils/utils';
 
-export default function Summary({ project }: { project: any }) {
+interface Props {
+  project: any;
+}
+
+export default function Summary({ project }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Hesaplama fonksiyonları
   const calculateTotalSqft = () => {
     const topsSqft = project.measurements.tops.reduce((sum: number, m: any) => 
       sum + (m.sqft || 0), 0);
@@ -18,7 +23,7 @@ export default function Summary({ project }: { project: any }) {
   };
 
   const calculateMaterialPrice = () => {
-    return Number((calculateTotalSqft() * 40).toFixed(2)); // $40 per sqft
+    return calculatePrice(calculateTotalSqft(), 40); // $40 per sqft
   };
 
   const calculateExtrasTotal = () => {
@@ -30,13 +35,47 @@ export default function Summary({ project }: { project: any }) {
     return calculateMaterialPrice() + calculateExtrasTotal();
   };
 
+  // Quote kaydetme fonksiyonu
+  const handleSaveQuote = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const quoteData = {
+        customerInfo: project.customerInfo,
+        projectDetails: project.projectDetails,
+        measurements: project.measurements,
+        extras: project.extras,
+        totalPrice: calculateGrandTotal()
+      };
+
+      const response = await fetch('/api/quotes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(quoteData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save quote');
+      }
+
+      setSuccess('Quote saved successfully!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save quote');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Müşteri Bilgileri */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Customer Information</h3>
-          <div className="space-y-2">
+      <div className="space-y-6 bg-gray-800 text-white p-6 rounded-lg">
+      <div className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:border-blue-500">
+      <h3 className="text-lg font-bold text-white mb-4">Customer Information</h3>
+      <div className="space-y-2">
             <p><span className="font-medium">Name:</span> {project.customerInfo.name}</p>
             <p><span className="font-medium">Address:</span> {project.customerInfo.address}</p>
             <p><span className="font-medium">Phone:</span> {project.customerInfo.phone}</p>
@@ -44,9 +83,10 @@ export default function Summary({ project }: { project: any }) {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Project Details</h3>
-          <div className="space-y-2">
+        <div             className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:border-blue-500"
+        >
+<h3 className="text-lg font-bold text-white mb-4">Project Details</h3>
+<div className="space-y-2">
             <p><span className="font-medium">Project Type:</span> {project.projectDetails.projectType}</p>
             <p><span className="font-medium">Material:</span> {project.projectDetails.materialType}</p>
             <p><span className="font-medium">Material Name:</span> {project.projectDetails.materialName}</p>
@@ -183,7 +223,7 @@ export default function Summary({ project }: { project: any }) {
           {loading ? 'Generating...' : 'Generate PDF'}
         </button>
         <button
-          onClick={() => console.log('Save quote clicked')}
+          onClick={handleSaveQuote}
           disabled={loading}
           className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors disabled:opacity-50"
         >

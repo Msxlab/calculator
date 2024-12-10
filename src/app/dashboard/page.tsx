@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import type { Project } from '@/types';
+import { formatCurrency } from '@/utils/utils';
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -47,7 +48,7 @@ export default function Dashboard() {
           onClick={() => router.push('/calculator')}
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
         >
-          New Project
+          New Quote
         </button>
       </div>
 
@@ -60,6 +61,9 @@ export default function Dashboard() {
                 <p className="text-sm text-gray-600">
                   {project.projectDetails.projectType} - {project.projectDetails.materialType}
                 </p>
+                {project.quoteNumber && (
+                  <p className="text-xs text-gray-500">Quote #{project.quoteNumber}</p>
+                )}
               </div>
               <span className="px-2 py-1 text-sm bg-blue-100 text-blue-800 rounded">
                 {project.status}
@@ -68,11 +72,11 @@ export default function Dashboard() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Total Price:</span>
-                <span className="font-medium">${project.totalPrice.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrency(project.totalPrice)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Created:</span>
-                <span>{new Date(project.createdAt).toLocaleDateString()}</span>
+                <span>{new Date(project.createdAt!).toLocaleDateString()}</span>
               </div>
             </div>
             <div className="mt-4 flex space-x-2">
@@ -87,6 +91,12 @@ export default function Dashboard() {
                 className="px-3 py-1 text-sm bg-blue-50 text-blue-600 hover:bg-blue-100 rounded"
               >
                 Edit
+              </button>
+              <button
+                onClick={() => generatePDF(project)}
+                className="px-3 py-1 text-sm bg-green-50 text-green-600 hover:bg-green-100 rounded"
+              >
+                PDF
               </button>
             </div>
           </div>

@@ -27,6 +27,7 @@ export interface ExtraService {
 
 export interface Project {
   id?: string;
+  quoteNumber?: string;
   customerInfo: CustomerInfo;
   projectDetails: ProjectDetails;
   measurements: {
@@ -36,7 +37,7 @@ export interface Project {
   };
   extras: ExtraService[];
   totalPrice: number;
-  status: 'draft' | 'quote' | 'contract' | 'completed';
+  status: 'draft' | 'sent' | 'approved' | 'completed';
   createdAt?: Date;
   updatedAt?: Date;
 }

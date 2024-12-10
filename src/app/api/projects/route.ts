@@ -1,70 +1,49 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const body = await req.json();
-    const project = await prisma.project.create({
+    const data = await request.json();
+    
+    const project = await prisma.quote.create({
       data: {
-        customerId: body.customerId,
-        projectType: body.projectDetails.projectType,
-        materialType: body.projectDetails.materialType,
-        materialName: body.projectDetails.materialName,
-        edgeType: body.projectDetails.edgeType,
-        totalPrice: body.totalPrice,
-        userId: body.userId,
-        measurements: {
-          create: [
-            ...body.measurements.tops.map((m: any) => ({
-              type: 'tops',
-              length: m.length,
-              width: m.width,
-              sqft: m.sqft,
-            })),
-            ...body.measurements.backsplashes.map((m: any) => ({
-              type: 'backsplashes',
-              length: m.length,
-              width: m.width,
-              sqft: m.sqft,
-            })),
-          ],
-        },
-        extras: {
-          create: body.extras,
-        },
-      },
-      include: {
-        measurements: true,
-        extras: true,
-      },
+        quoteNumber: `Q${Date.now()}`,
+        customerInfo: JSON.stringify(data.customerInfo),
+        projectDetails: JSON.stringify(data.projectDetails),
+        measurements: JSON.stringify(data.measurements),
+        extras: JSON.stringify(data.extras),
+        totalPrice: data.totalPrice,
+        status: 'draft'
+      }
     });
 
     return NextResponse.json(project);
   } catch (error) {
-    console.error('Error creating project:', error);
-    return NextResponse.json(
-      { error: 'Failed to create project' },
-      { status: 500 }
-    );
+    console.error('Save error:', error);
+    return NextResponse.json({ error: 'Failed to create project' }, { status: 500 });
   }
 }
 
 export async function GET() {
   try {
-    const projects = await prisma.project.findMany({
-      include: {
-        customer: true,
-        measurements: true,
-        extras: true,
-      },
+    const projects = await prisma.quote.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
 
-    return NextResponse.json(projects);
+    // JSON string'leri objelere çevir
+    const formattedProjects = projects.map(project => ({
+      ...project,
+      customerInfo: JSON.parse(project.customerInfo),
+      projectDetails: JSON.parse(project.projectDetails),
+      measurements: JSON.parse(project.measurements),
+      extras: JSON.parse(project.extras)
+    }));
+
+    return NextResponse.json(formattedProjects);
   } catch (error) {
-    console.error('Error fetching projects:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch projects' },
-      { status: 500 }
-    );
+    console.error('Fetch error:', error);
+    return NextResponse.json({ error: 'Failed to fetch projects' }, { status: 500 });
   }
 }

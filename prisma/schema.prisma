@@ -72,3 +72,23 @@ model Extra {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model Quote {
+  id             String   @id @default(cuid())
+  quoteNumber    String   @unique @default(cuid())
+  status         String   @default("draft") 
+  customerInfo   String   // JSON olarak string'e çevrilecek
+  projectDetails String   // JSON olarak string'e çevrilecek
+  measurements   String   // JSON olarak string'e çevrilecek
+  extras         String   // JSON olarak string'e çevrilecek
+  totalPrice     Float    
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Settings {
+  id            String @id @default("default")
+  materialPrices String // JSON olarak string'e çevrilecek
+  edgePrices    String // JSON olarak string'e çevrilecek
+  extraPrices   String // JSON olarak string'e çevrilecek
+}

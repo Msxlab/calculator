@@ -56,7 +56,7 @@ export default function Measurements({ data, onChange }: Props) {
               <td className="p-1">
                 <input
                   type="text"
-                  className="w-24 px-2 py-1 border rounded"
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:border-blue-500"
                   value={measurement.length || ''}
                   onChange={(e) => handleChange(type, index, 'length', e.target.value)}
                 />
@@ -64,7 +64,7 @@ export default function Measurements({ data, onChange }: Props) {
               <td className="p-1">
                 <input
                   type="text"
-                  className="w-24 px-2 py-1 border rounded"
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:border-blue-500"
                   value={measurement.width || ''}
                   onChange={(e) => handleChange(type, index, 'width', e.target.value)}
                 />
@@ -72,7 +72,7 @@ export default function Measurements({ data, onChange }: Props) {
               <td className="p-1">
                 <input
                   type="text"
-                  className="w-24 px-2 py-1 border rounded bg-gray-100"
+                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white focus:border-blue-500"
                   value={measurement.sqft.toFixed(2)}
                   readOnly
                 />
@@ -85,7 +85,7 @@ export default function Measurements({ data, onChange }: Props) {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-gray-800 text-white p-6 rounded-lg">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {renderTable('tops', data.tops)}
         {renderTable('backsplashes', data.backsplashes)}
