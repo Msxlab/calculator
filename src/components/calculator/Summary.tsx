@@ -48,6 +48,7 @@ export default function Summary({ project }: Props) {
         extras: project.extras,
         totalPrice: calculateGrandTotal()
       };
+      
 
       const response = await fetch('/api/quotes', {
         method: 'POST',
